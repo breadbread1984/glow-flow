@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow_probability as tfp
+import tensorflow.contrib.distributions as tfd
 import numpy as np
 
 from .squeeze import Squeeze
@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-tfb = tfp.bijectors
+tfb = tfd.bijectors
 
 
 class GlowStep(tfb.Bijector):
@@ -82,12 +82,13 @@ class GlowStep(tfb.Bijector):
                 event_shape_out=(-1, np.prod(self._image_shape)),
                 event_shape_in=[-1] + list(self._image_shape)))
             affine_coupling = tfb.RealNVP(
-                num_masked=np.prod(self._image_shape)//2,
+                num_masked=np.prod(self._image_shape)//2, #former half of the tensor pass directly
                 shift_and_log_scale_fn=glow_resnet_template(
                     image_shape=self._image_shape,
                     filters=(512, 512),
                     kernel_sizes=((3, 3), (3, 3)),
-                    activation=tf.nn.relu))
+                    activation=tf.nn.relu)
+                )
             # TODO(hartikainen): This should not require inverting
             unflatten = tfb.Invert(tfb.Reshape(
                 event_shape_out=[-1] + list(self._image_shape),
@@ -248,15 +249,7 @@ class GlowFlow(tfb.Bijector):
         raise NotImplementedError("_maybe_assert_valid_y")
 
 
-def glow_resnet_template(
-        image_shape,
-        filters=(512, 512),
-        kernel_sizes=((3, 3), (3, 3)),
-        shift_only=False,
-        activation=tf.nn.relu,
-        name=None,
-        *args,
-        **kwargs):
+def glow_resnet_template(image_shape,filters=(512, 512),kernel_sizes=((3, 3), (3, 3)),shift_only=False,activation=tf.nn.relu,name=None,*args,**kwargs):
     """Build a scale-and-shift functions using a weight normalized resnet.
     This will be wrapped in a make_template to ensure the variables are only
     created once. It takes the `d`-dimensional input x[0:d] and returns the
@@ -276,13 +269,10 @@ def glow_resnet_template(
     with tf.name_scope(name, "glow_resnet_template"):
         def _fn(x, output_units=None):
             """Resnet parameterized via `glow_resnet_template`."""
-
-            output_units = output_units or image_shape[-1]
-
-            x = tf.reshape(
-                x, [-1] + image_shape[:2].as_list() + [int(image_shape[2])//2])
-
+            output_units = output_units or image_shape[-1] # c
+            x = tf.reshape(x, [-1] + image_shape[:2].as_list() + [int(image_shape[2])//2]) # the former half of the tensor is feed to the network (batch x h x w x (c/2))
             for filter_size, kernel_size in zip(filters, kernel_sizes):
+                # cov2 (3x3) -> BN -> ReLU, the size of tensor remains
                 x = tf.layers.conv2d(
                     inputs=x,
                     filters=filter_size,
@@ -291,29 +281,18 @@ def glow_resnet_template(
                     padding='same',
                     kernel_initializer=tf.random_normal_initializer(0.0, 0.05),
                     kernel_constraint=lambda kernel: (
-                        tf.nn.l2_normalize(
-                            kernel, list(range(kernel.shape.ndims-1)))))
+                        tf.nn.l2_normalize(kernel, list(range(kernel.shape.ndims-1)))
+                    )
+                );
+                x = tf.layers.batch_normalization(x, axis=-1);
+                x = activation(x);
 
-                x = tf.layers.batch_normalization(x, axis=-1)
-                x = activation(x)
-
-            output_filters = (1 if shift_only else 2) * (
-                output_units // np.prod(image_shape[:2]))
-            x = tf.layers.conv2d(
-                inputs=x,
-                filters=output_filters,
-                kernel_size=(3, 3),
-                strides=(1, 1),
-                padding='same',
-                kernel_initializer=tf.zeros_initializer())
-            x = tf.layers.batch_normalization(x, axis=-1)
-
-            x = tf.reshape(x, [-1, np.prod(image_shape[:2]) * output_filters])
-
-            if shift_only:
-                return x, None
-
-            shift, log_scale = tf.split(x, 2, axis=-1)
-            return shift, log_scale
+            output_filters = (1 if shift_only else 2) * (output_units // np.prod(image_shape[:2])); # 2 * c / (h * w)
+            x = tf.layers.conv2d(inputs=x,filters=output_filters,kernel_size=(3, 3),strides=(1, 1),padding='same',kernel_initializer=tf.zeros_initializer());
+            x = tf.layers.batch_normalization(x, axis=-1);
+            x = tf.reshape(x, [-1, np.prod(image_shape[:2]) * output_filters]); # batch x (2 * c)
+            if shift_only: return x, None;
+            shift, log_scale = tf.split(x, 2, axis=-1); #one network outputs both t and log(s)
+            return shift, log_scale; # ((batch * h * w) / 2) x c
 
         return tf.make_template("glow_resnet_template", _fn)

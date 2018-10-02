@@ -11,7 +11,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 
 import tensorflow as tf
-import tensorflow_probability as tfp
+import tensorflow.contrib.distributions as tfd
 
 
 __all__ = [
@@ -19,7 +19,7 @@ __all__ = [
 ]
 
 
-tfb = tfp.bijectors
+tfb = tfd.bijectors
 
 
 def _use_static_shape(input_tensor, ndims):

@@ -10,13 +10,10 @@ from datetime import datetime
 
 # Dependency imports
 import tensorflow as tf
-import tensorflow_probability as tfp
+import tensorflow.contrib.distributions as tfd
 
-from .datasets import get_input_fns
+from scripts.datasets import get_input_fns
 from glow.bijectors import GlowFlow
-
-tfd = tfp.distributions
-
 
 AVAILABLE_DATASETS = ('mnist', )
 

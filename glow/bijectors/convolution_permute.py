@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow_probability as tfp
+import tensorflow.contrib.distributions as tfd
 
 
 __all__ = [
@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-tfb = tfp.bijectors
+tfb = tfd.bijectors
 
 
 class ConvolutionPermute(tfb.Bijector):
