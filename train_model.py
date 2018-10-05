@@ -11,7 +11,7 @@ def main(unused_argv):
 	generator = tf.estimator.Estimator(model_fn = model_fn, model_dir = "generator_model");
 	tf.logging.set_verbosity(tf.logging.DEBUG);
 	logging_hook = tf.train.LoggingTensorHook(tensors = {"loss":"loss"}, every_n_iter = 1);
-	generator.train(input_fn = input_fn, steps = 200000, hooks = [logging_hook]);
+	generator.train(input_fn = train_input_fn, steps = 200000, hooks = [logging_hook]);
 	eval_results = generator.evaluate(input_fn = eval_input_fn, steps = 1);
 	print(eval_results);
 
