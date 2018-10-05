@@ -30,7 +30,7 @@ def parse_function(serialized_example):
 	return data,label;
 	
 def train_input_fn():
-	dataset = tf.data.TFRecordDataset(['trainset.tfrecord']);
+	dataset = tf.data.TFRecordDataset(['dataset/trainset.tfrecord']);
 	dataset = dataset.map(parse_function);
 	dataset = dataset.shuffle(buffer_size = batch_size);
 	dataset = dataset.batch(batch_size);
@@ -40,7 +40,7 @@ def train_input_fn():
 	return features, labels;
 
 def eval_input_fn():
-	dataset = tf.data.TFRecordDataset(['testset.tfrecord']);
+	dataset = tf.data.TFRecordDataset(['dataset/testset.tfrecord']);
 	dataset = dataset.map(parse_function);
 	dataset = dataset.batch(batch_size);
 	dataset = dataset.repeat(None);
