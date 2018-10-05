@@ -12,10 +12,10 @@ class GlowStep(tfp.bijectors.Bijector):
 		layers = [];
 		for i in range(depth):
 			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization()));
-			layers.append(ConvolutionInvertible.ConvolutionInvertible(shape.as_list()[-1],name = self._name + "/conv_inv_{}".format(i)));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape.as_list()[1:])]));
-			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape.as_list()[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1] + shape.as_list()[1:]));
+			layers.append(ConvolutionInvertible.ConvolutionInvertible(np.array(shape[-1]),name = self._name + "/conv_inv_{}".format(i)));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape[1:])]));
+			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = tf.concat([[-1], shape[1:]], axis = 0)));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 	def _forward(self,x):

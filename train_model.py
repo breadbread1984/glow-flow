@@ -26,6 +26,8 @@ def parse_function(serialized_example):
 	data = tf.decode_raw(feature['data'],out_type = tf.uint8);
 	data = tf.reshape(data,[28,28,1]);
 	data = tf.cast(data,dtype = tf.float32);
+	#turn 1-channel image into 3-channel one to test ConvolutionInvertible
+	data = tf.concat([data,data,data],axis = -1);
 	label = tf.cast(feature['label'],dtype = tf.int32);
 	return data,label;
 	
@@ -51,13 +53,13 @@ def eval_input_fn():
 def model_fn(features, labels, mode):
 	# hidden status has the same dimension of the visible status
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
-		loc = tf.zeros(features.shape[-3:]),
-		scale_diag = tf.ones(features.shape[-3:])
+		loc = tf.zeros(tf.shape(features)[-3:]),
+		scale_diag = tf.ones(tf.shape(features)[-3:])
 	);
 	# normalizing flow
 	transformed_dist = tfp.distributions.TransformedDistribution(
 		distribution = base_distribution,
-		bijector = Glow.Glow(features.shape),
+		bijector = Glow.Glow(tf.shape(features)),
 		name = "transformed_dist"
 	);
 	# predict mode
