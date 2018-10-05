@@ -11,13 +11,13 @@ class Glow(tfp.bijectors.Bijector):
 		# setup network structure
 		layers = [];
 		for i in range(levels):
-			layers.append(tfp.bijectors.Invert(Squeeze(factor = 2**(i+1))));
-			layers.append(Parallel(
-				bijectors = [GlowStep(shape,depth = depth),tfp.bijectors.Identity()], 
+			layers.append(tfp.bijectors.Invert(Squeeze.Squeeze(factor = 2**(i+1))));
+			layers.append(Parallel.Parallel(
+				bijectors = [GlowStep.GlowStep(shape,depth = depth,name = "glow_step_{}".format(i)),tfp.bijectors.Identity()], 
 				weights = [1, 2**i-1],
 				axis = -1
 			));
-			layers.append(Squeeze(factor = 2**(i+1)));
+			layers.append(Squeeze.Squeeze(factor = 2**(i+1)));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 	def _forward(self, x):

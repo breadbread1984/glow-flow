@@ -9,7 +9,7 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
 		super(ConvolutionInvertible,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
 		#shared weight between forward and inverse conv operators
 		with tf.variable_scope(self._name):
-			self.w = tf.get_variable("w",shape = [1,1,filters,filters],dtype = tf.float32,initializer = tf.initializer.orthogonal());
+			self.w = tf.get_variable("w",shape = [1,1,filters,filters],dtype = tf.float32,initializer = tf.initializers.orthogonal());
 	def _forward(self,x):
 		y = tf.nn.conv2d(x,filter = self.w,padding = 'same');
 		return y;
