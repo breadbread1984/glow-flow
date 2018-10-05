@@ -1,8 +1,0 @@
-name: glow-flow
-channels:
-- defaults
-- conda-forge
-dependencies:
-- python=3.6
-- pip:
-    - -r ./requirements.txt
