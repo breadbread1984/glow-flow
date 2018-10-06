@@ -8,12 +8,13 @@ import ConvolutionInvertible;
 class GlowStep(tfp.bijectors.Bijector):
 	def __init__(self, depth = 2, validate_args = False, name = 'GlowStep'):
 		super(GlowStep,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
+		self.depth = depth;
 		self.built = False;
 	def build(self,x):
 		shape = x.get_shape();
 		# setup network structure
 		layers = [];
-		for i in range(depth):
+		for i in range(self.depth):
 			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization()));
 			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape[1:])]));
