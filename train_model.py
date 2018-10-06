@@ -59,7 +59,7 @@ def model_fn(features, labels, mode):
 	# normalizing flow
 	transformed_dist = tfp.distributions.TransformedDistribution(
 		distribution = base_distribution,
-		bijector = Glow.Glow(tf.shape(features)),
+		bijector = Glow.Glow(),
 		name = "transformed_dist"
 	);
 	# predict mode

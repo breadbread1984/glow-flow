@@ -6,21 +6,31 @@ import tensorflow_probability as tfp;
 import ConvolutionInvertible;
 
 class GlowStep(tfp.bijectors.Bijector):
-	def __init__(self, shape, depth = 2, validate_args = False, name = 'GlowStep'):
+	def __init__(self, depth = 2, validate_args = False, name = 'GlowStep'):
 		super(GlowStep,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
+		self.built = False;
+	def build(self,x):
+		shape = x.get_shape();
 		# setup network structure
 		layers = [];
 		for i in range(depth):
 			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization()));
-			layers.append(ConvolutionInvertible.ConvolutionInvertible(np.array(shape[-1]),name = self._name + "/conv_inv_{}".format(i)));
+			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape[1:])]));
 			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = tf.concat([[-1], shape[1:]], axis = 0)));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = shape, axis = 0)));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
+		self.built = True;
 	def _forward(self,x):
+		if self.built == False: build(x);
 		return self.flow.forward(x);
 	def _inverse(self,y):
+		if self.built == False: build(y);
 		return self.flow.inverse(y);
 	def _inverse_log_det_jacobian(self,y):
+		if self.built == False: build(y);
 		return self.flow.inverse_log_det_jacobian(y);
+	def _forward_log_det_jacobian(self,x):
+		if self.built == False: build(x);
+		return -self._inverse_log_det_jacobian(x);
