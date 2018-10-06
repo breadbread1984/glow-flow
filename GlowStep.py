@@ -18,19 +18,19 @@ class GlowStep(tfp.bijectors.Bijector):
 			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape[1:])]));
 			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = shape, axis = 0)));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = shape, axis = 0));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 		self.built = True;
 	def _forward(self,x):
-		if self.built == False: build(x);
+		if self.built == False: self.build(x);
 		return self.flow.forward(x);
 	def _inverse(self,y):
-		if self.built == False: build(y);
+		if self.built == False: self.build(y);
 		return self.flow.inverse(y);
 	def _inverse_log_det_jacobian(self,y):
-		if self.built == False: build(y);
+		if self.built == False: self.build(y);
 		return self.flow.inverse_log_det_jacobian(y);
 	def _forward_log_det_jacobian(self,x):
-		if self.built == False: build(x);
+		if self.built == False: self.build(x);
 		return -self._inverse_log_det_jacobian(x);
