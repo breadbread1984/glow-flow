@@ -52,7 +52,7 @@ def eval_input_fn():
 def model_fn(features, labels, mode):
 	# shape of the code
 	shape = [28 // 2**levels,28 // 2**levels,1 * 2**(2*levels)];
-	# hidden status has the same dimension of the visible status
+	# code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
 		loc = tf.zeros(shape),
 		scale_diag = tf.ones(shape)

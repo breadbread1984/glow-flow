@@ -19,7 +19,7 @@ class GlowStep(tfp.bijectors.Bijector):
 			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1,np.prod(shape[1:])]));
 			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = shape));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = [-1] + list(shape[1:])));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 		self.built = True;
