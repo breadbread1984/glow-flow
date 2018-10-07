@@ -58,9 +58,12 @@ def model_fn(features, labels, mode):
 		scale_diag = tf.ones(shape)
 	);
 	# normalizing flow
+	# The TransformedDistribution defines forward direction from code to image
+	# I define Glow's forward direction from image to code
+	# Therefore, I give the Glow bijector in the inverted direction
 	transformed_dist = tfp.distributions.TransformedDistribution(
 		distribution = base_distribution,
-		bijector = Glow.Glow(levels = levels),
+		bijector = tfp.bijectors.Invert(Glow.Glow(levels = levels)),
 		name = "transformed_dist"
 	);
 	# predict mode
