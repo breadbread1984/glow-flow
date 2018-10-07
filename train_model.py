@@ -6,6 +6,7 @@ import tensorflow_probability as tfp;
 import Glow;
 
 batch_size = 256;
+levels = 2;
 
 def main(unused_argv):
 	generator = tf.estimator.Estimator(model_fn = model_fn, model_dir = "generator_model");
@@ -26,8 +27,6 @@ def parse_function(serialized_example):
 	data = tf.decode_raw(feature['data'],out_type = tf.uint8);
 	data = tf.reshape(data,[28,28,1]);
 	data = tf.cast(data,dtype = tf.float32);
-	#turn 1-channel image into 3-channel one to test ConvolutionInvertible
-	data = tf.concat([data,data,data],axis = -1);
 	label = tf.cast(feature['label'],dtype = tf.int32);
 	return data,label;
 	
@@ -51,15 +50,17 @@ def eval_input_fn():
 	return features, labels;
 	
 def model_fn(features, labels, mode):
+	# shape of the code
+	shape = [28 // 2**levels,28 // 2**levels,1 * 2**(2*levels)];
 	# hidden status has the same dimension of the visible status
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
-		loc = tf.zeros(tf.shape(features)[-3:]),
-		scale_diag = tf.ones(tf.shape(features)[-3:])
+		loc = tf.zeros(shape),
+		scale_diag = tf.ones(shape)
 	);
 	# normalizing flow
 	transformed_dist = tfp.distributions.TransformedDistribution(
 		distribution = base_distribution,
-		bijector = Glow.Glow(),
+		bijector = Glow.Glow(levels = levels),
 		name = "transformed_dist"
 	);
 	# predict mode
