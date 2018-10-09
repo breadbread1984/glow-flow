@@ -50,12 +50,10 @@ def eval_input_fn():
 	return features, labels;
 	
 def model_fn(features, labels, mode):
-	# shape of the code
-	shape = [28 // 2**levels,28 // 2**levels,1 * 2**(2*levels)];
 	# code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
-		loc = tf.zeros(shape),
-		scale_diag = tf.ones(shape)
+		loc = tf.zeros(features.shape[-3:]),
+		scale_diag = tf.ones(features.shape[-3:])
 	);
 	# normalizing flow
 	# The TransformedDistribution defines forward direction from code to image
