@@ -15,18 +15,18 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
 			self.w = tf.get_variable("w", shape = [1,1,shape[-1],shape[-1]], dtype = tf.float32,initializer = tf.initializers.orthogonal());
 		self.built = True;
 	def _forward(self,x):
-		if self.built == False: build(x);
-		y = tf.nn.conv2d(x,filter = self.w,padding = 'same');
+		if self.built == False: self.build(x);
+		y = tf.nn.conv2d(x,filter = self.w,strides=(1,1,1,1),padding = 'SAME');
 		return y;
 	def _inverse(self,y):
-		if self.built == False: build(y);
-		x = tf.nn.conv2d(y,filter = tf.matrix_inverse(self.w),padding = 'same');
+		if self.built == False: self.build(y);
+		x = tf.nn.conv2d(y,filter = tf.matrix_inverse(self.w),strides=(1,1,1,1),padding = 'SAME');
 		return x;
 	def _inverse_log_det_jacobian(self,y):
-		if self.built == False: build(y);
+		if self.built == False: self.build(y);
 		#tensorflow has no LU decomposition implement, so get determinant directly
 		detJ = tf.matrix_determinant(tf.matrix_inverse(self.w));
 		return tf.log(tf.abs(detJ)); #equals sum_i log(|S_i|) where S is a diagonal matrix derived from inv(W)
 	def _forward_log_det_jacobian(self,x):
-		if self.built == False: build(x);
+		if self.built == False: self.build(x);
 		return -self._inverse_log_det_jacobian(x);

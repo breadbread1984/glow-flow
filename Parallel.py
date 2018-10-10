@@ -20,7 +20,13 @@ class Parallel(tfp.bijectors.Bijector):
 		for i,(bijector,weight) in enumerate(zip(self.bijectors,self.weights)):
 			i_start = sum(self.weights[:i]); #start index of splits
 			i_end = i_start + weight;	#end index of splits
-			y.append(bijector.forward(tf.concat(splits[i_start:i_end], axis = self.axis)));
+			if i_end - i_start >= 2:
+				#if the tensor is composed by multiple slices
+				y.append(bijector.forward(tf.concat(splits[i_start:i_end], axis = self.axis)));
+			elif i_end - i_start == 1:
+				#if the tensor is just one slice
+				y.append(bijector.forward(splits[i_start]));
+			#else no action
 		return tf.concat(y,axis = self.axis);
 	def _inverse(self,y):
 		splits = tf.split(y,sum(self.weights), axis = self.axis);
