@@ -50,7 +50,7 @@ def eval_input_fn():
 	return features, labels;
 	
 def model_fn(features, labels, mode):
-	# 1-D code distribution
+	# 1-D vector code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
 		loc = tf.zeros([batch_size,np.prod(features.shape[-3:])]),
 		scale_diag = tf.ones([batch_size,np.prod(features.shape[-3:])])
