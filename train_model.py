@@ -50,10 +50,10 @@ def eval_input_fn():
 	return features, labels;
 	
 def model_fn(features, labels, mode):
-	# code distribution
+	# 1-D code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
-		loc = tf.zeros(features.shape[-3:]),
-		scale_diag = tf.ones(features.shape[-3:])
+		loc = tf.zeros([batch_size,np.prod(features.shape[-3:])]),
+		scale_diag = tf.ones([batch_size,np.prod(features.shape[-3:])])
 	);
 	# normalizing flow
 	# The TransformedDistribution defines forward direction from code to image
