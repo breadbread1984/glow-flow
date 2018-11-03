@@ -50,6 +50,10 @@ class Parallel(tfp.bijectors.Bijector):
 		for i,(bijector,weight) in enumerate(zip(self.bijectors,self.weights)):
 			i_start = sum(self.weights[:i]);
 			i_end = i_start + weight;
-			ildjs.append(bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis),event_ndims = 3));
+			if i_end - i_start >= 2:
+				ildjs.append(bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis),event_ndims = 3));
+			elif i_end - i_start == 1:
+				ildjs.append(bijector.inverse_log_det_jacobian(splits[i_start], event_ndims = 3));
+			#else no action
 		if len(ildjs) >= 2: return tf.add_n(ildjs);
 		else: return ildjs[0];

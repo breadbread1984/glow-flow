@@ -12,6 +12,7 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
 		shape = x.get_shape();
 		#shared weight between forward and inverse conv operators
 		with tf.variable_scope(self._name):
+			#shape=(height,width,channel_in,channel_out)
 			self.w = tf.get_variable("w", shape = [1,1,shape[-1],shape[-1]], dtype = tf.float32,initializer = tf.initializers.orthogonal());
 		self.built = True;
 	def _forward(self,x):
@@ -26,7 +27,6 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
 		if self.built == False: self.build(y);
 		#tensorflow has no LU decomposition implement, so get determinant directly
 		detJ = tf.matrix_determinant(tf.matrix_inverse(self.w));
-		return tf.log(tf.abs(detJ)); #equals sum_i log(|S_i|) where S is a diagonal matrix derived from inv(W)
-	def _forward_log_det_jacobian(self,x):
-		if self.built == False: self.build(x);
-		return -self._inverse_log_det_jacobian(x);
+		ildj = tf.log(tf.abs(detJ)); #equals sum_i log(|S_i|) where S is a diagonal matrix derived from inv(W)
+		ildj = tf.reshape(ildj,[1]); #it is a 1x1 convolution op, so the size is 1
+		return tf.reshape(tf.tile(ildj,tf.shape(y)[:-3]), shape = [tf.shape(y)[0],1]);

@@ -37,6 +37,3 @@ class Glow(tfp.bijectors.Bijector):
 	def _inverse_log_det_jacobian(self, y):
 		if self.built == False: self.build(y);
 		return self.flow.inverse_log_det_jacobian(y,event_ndims = 3);
-	def _forward_log_det_jacobian(self, x):
-		if self.built == False: self.build(x);
-		return self.flow.forward_log_det_jacobian(x,event_ndims = 3);
