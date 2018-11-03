@@ -27,20 +27,29 @@ class Parallel(tfp.bijectors.Bijector):
 				#if the tensor is just one slice
 				y.append(bijector.forward(splits[i_start]));
 			#else no action
-		return tf.concat(y,axis = self.axis);
+		if len(y) >= 2: return tf.concat(y,axis = self.axis);
+		else: return y[0];
 	def _inverse(self,y):
 		splits = tf.split(y,sum(self.weights), axis = self.axis);
 		x = [];
 		for i,(bijector,weight) in enumerate(zip(self.bijectors,self.weights)):
-			i_start = sum(self.weights[:i]);
-			i_end = i_start + weight;
-			x.append(bijector.inverse(tf.concat(splits[i_start:i_end], axis = self.axis)));
-		return tf.concat(x,axis = self.axis);
+			i_start = sum(self.weights[:i]); #start index of splits
+			i_end = i_start + weight;	#end index of splits
+			if i_end - i_start >= 2:
+				#if the tensor is composed by multiple slices
+				x.append(bijector.inverse(tf.concat(splits[i_start:i_end], axis = self.axis)));
+			elif i_end - i_start == 1:
+				#if the tensor is just on slice
+				x.append(bijector.inverse(splits[i_start]));
+			#else no action
+		if len(x) >= 2: return tf.concat(x,axis = self.axis);
+		else: return x[0];
 	def _inverse_log_det_jacobian(self,y):
 		splits = tf.split(y,sum(self.weights), axis = self.axis);
 		ildjs = [];
 		for i,(bijector,weight) in enumerate(zip(self.bijectors,self.weights)):
 			i_start = sum(self.weights[:i]);
 			i_end = i_start + weight;
-			ildjs.append(bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis)));
-		return tf.add_n(ildjs);
+			ildjs.append(bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis),event_ndims = 3));
+		if len(ildjs) >= 2: return tf.add_n(ildjs);
+		else: return ildjs[0];

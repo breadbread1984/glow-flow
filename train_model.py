@@ -50,6 +50,7 @@ def eval_input_fn():
 	return features, labels;
 	
 def model_fn(features, labels, mode):
+	shape = features.get_shape();
 	# 1-D vector code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
 		loc = tf.zeros([batch_size,np.prod(features.shape[-3:])]),
@@ -61,7 +62,10 @@ def model_fn(features, labels, mode):
 	# Therefore, I give the Glow bijector in the inverted direction
 	transformed_dist = tfp.distributions.TransformedDistribution(
 		distribution = base_distribution,
-		bijector = tfp.bijectors.Invert(Glow.Glow(levels = levels)),
+		bijector = tfp.bijectors.Chain([
+			tfp.bijectors.Invert(Glow.Glow(levels = levels)),
+			tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])])
+		]),
 		name = "transformed_dist"
 	);
 	# predict mode

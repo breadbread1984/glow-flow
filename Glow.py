@@ -7,7 +7,7 @@ import Parallel,Squeeze,GlowStep;
 
 class Glow(tfp.bijectors.Bijector):
 	def __init__(self, levels = 2, depth = 2, validate_args = False, name = 'Glow'):
-		super(Glow,self).__init__(forward_min_event_ndims = 3, inverse_min_event_ndims = 1, validate_args = validate_args, name = name);
+		super(Glow,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
 		self.levels = levels;
 		self.depth = depth;
 		self.built = False;
@@ -23,7 +23,6 @@ class Glow(tfp.bijectors.Bijector):
 				axis = -1
 			));
 			layers.append(tfp.bijectors.Invert(Squeeze.Squeeze(factor = 2**i)));
-		layers.append(tfp.bijectors.Reshape(event_shape_in = [-1] + list(shape[1:]), event_shape_out = [-1,np.prod(shape[1:])]));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 		self.built = True;
@@ -37,7 +36,7 @@ class Glow(tfp.bijectors.Bijector):
 		return self.flow.inverse(y);
 	def _inverse_log_det_jacobian(self, y):
 		if self.built == False: self.build(y);
-		return self.flow.inverse_log_det_jacobian(y);
+		return self.flow.inverse_log_det_jacobian(y,event_ndims = 3);
 	def _forward_log_det_jacobian(self, x):
 		if self.built == False: self.build(x);
-		return -self._inverse_log_det_jacobian(x);
+		return self.flow.forward_log_det_jacobian(x,event_ndims = 3);
