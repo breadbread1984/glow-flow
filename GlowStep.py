@@ -15,11 +15,11 @@ class GlowStep(tfp.bijectors.Bijector):
 		# setup network structure
 		layers = [];
 		for i in range(self.depth):
-			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization()));
+			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization(), name = self._name + "/bn_{}".format(i)));
 			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
-			layers.append(tfp.bijectors.Reshape(event_shape_in = list(shape[1:]), event_shape_out = [np.prod(shape[1:])]));
-			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512])));
-			layers.append(tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])]));
+			layers.append(tfp.bijectors.Reshape(event_shape_in = list(shape[1:]), event_shape_out = [np.prod(shape[1:])], name = self._name + "/flatten_{}".format(i)));
+			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512]), name = self._name + "/realnvp_{}".format(i)));
+			layers.append(tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])], name = self._name + "/unflatten_{}".format(i)));
 		# Note that tfb.Chain takes a list of bijectors in the *reverse* order
 		self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 		self.built = True;
