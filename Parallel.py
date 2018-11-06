@@ -46,13 +46,16 @@ class Parallel(tfp.bijectors.Bijector):
 		else: return x[0];
 	def _inverse_log_det_jacobian(self,y):
 		splits = tf.split(y,sum(self.weights), axis = self.axis);
-		ildjs = 0;
+		ildj_sum = 0;
 		for i,(bijector,weight) in enumerate(zip(self.bijectors,self.weights)):
 			i_start = sum(self.weights[:i]);
 			i_end = i_start + weight;
 			if i_end - i_start >= 2:
-				ildjs = ildjs + bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis),event_ndims = 3);
+				ildj = bijector.inverse_log_det_jacobian(tf.concat(splits[i_start:i_end], axis = self.axis),event_ndims = 3);
 			elif i_end - i_start == 1:
-				ildjs = ildjs + bijector.inverse_log_det_jacobian(splits[i_start], event_ndims = 3);
-			#else no action
-		return ildjs;
+				ildj = bijector.inverse_log_det_jacobian(splits[i_start], event_ndims = 3);
+			else:
+				#this tensor slice gets nothing
+				continue;
+			ildj_sum = ildj_sum + ildj;
+		return ildj_sum;

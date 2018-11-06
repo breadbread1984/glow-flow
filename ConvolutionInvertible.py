@@ -28,4 +28,5 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
 		#tensorflow has no LU decomposition implement, so get determinant directly
 		detJ = tf.matrix_determinant(tf.matrix_inverse(self.w));
 		ildj = tf.reshape(tf.log(tf.abs(detJ)),[1]); #equals sum_i log(|S_i|) where S is a diagonal matrix derived from inv(W)
-		return tf.reshape(tf.tile(ildj,tf.shape(y)[:-3]), shape = [tf.shape(y)[0],1]);
+		assert(ildj.shape == [1]);
+		return tf.tile(ildj,tf.shape(y)[:-3]);

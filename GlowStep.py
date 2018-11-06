@@ -3,7 +3,7 @@
 import numpy as np;
 import tensorflow as tf;
 import tensorflow_probability as tfp;
-import ConvolutionInvertible;
+from ConvolutionInvertible import ConvolutionInvertible;
 
 class GlowStep(tfp.bijectors.Bijector):
 	def __init__(self, depth = 2, validate_args = False, name = 'GlowStep'):
@@ -16,7 +16,7 @@ class GlowStep(tfp.bijectors.Bijector):
 		layers = [];
 		for i in range(self.depth):
 			layers.append(tfp.bijectors.BatchNormalization(batchnorm_layer = tf.layers.BatchNormalization(), name = self._name + "/bn_{}".format(i)));
-			layers.append(ConvolutionInvertible.ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
+			layers.append(ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_in = list(shape[1:]), event_shape_out = [np.prod(shape[1:])], name = self._name + "/flatten_{}".format(i)));
 			layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512]), name = self._name + "/realnvp_{}".format(i)));
 			layers.append(tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])], name = self._name + "/unflatten_{}".format(i)));
@@ -31,4 +31,5 @@ class GlowStep(tfp.bijectors.Bijector):
 		return self.flow.inverse(y);
 	def _inverse_log_det_jacobian(self,y):
 		if self.built == False: self.build(y);
-		return self.flow.inverse_log_det_jacobian(y, event_ndims = 3);
+		ildj = self.flow.inverse_log_det_jacobian(y, event_ndims = 3);
+		return ildj;

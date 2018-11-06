@@ -5,7 +5,7 @@ import tensorflow as tf;
 import tensorflow_probability as tfp;
 import Glow;
 
-batch_size = 256;
+batch_size = 200;
 levels = 2;
 
 def main(unused_argv):
@@ -26,6 +26,7 @@ def parse_function(serialized_example):
 	);
 	data = tf.decode_raw(feature['data'],out_type = tf.uint8);
 	data = tf.reshape(data,[28,28,1]);
+	data = tf.pad(data, paddings = [[2,2],[2,2],[0,0]], mode = 'CONSTANT');
 	data = tf.cast(data,dtype = tf.float32);
 	label = tf.cast(feature['label'],dtype = tf.int32);
 	return data,label;
@@ -53,8 +54,10 @@ def model_fn(features, labels, mode):
 	shape = features.get_shape();
 	# 1-D vector code distribution
 	base_distribution = tfp.distributions.MultivariateNormalDiag(
-		loc = tf.zeros([batch_size,np.prod(features.shape[-3:])]),
-		scale_diag = tf.ones([batch_size,np.prod(features.shape[-3:])])
+#		loc = tf.zeros([batch_size,np.prod(features.shape[-3:])]),
+#		scale_diag = tf.ones([batch_size,np.prod(features.shape[-3:])])
+		loc = tf.zeros([np.prod(features.shape[-3:])]),
+		scale_diag = tf.ones([np.prod(features.shape[-3:])])
 	);
 	# normalizing flow
 	# The TransformedDistribution defines forward direction from code to image
@@ -76,8 +79,8 @@ def model_fn(features, labels, mode):
 	if mode == tf.estimator.ModeKeys.TRAIN:
 		loss = -tf.reduce_mean(transformed_dist.log_prob(features));
 		#learning rate
-		lr = tf.train.cosine_decay(1e-4, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
-		optimizer = tf.train.AdamOptimizer(1e-3);
+		lr = tf.train.cosine_decay(1e-6, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
+		optimizer = tf.train.AdamOptimizer(lr);
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step());
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, train_op = train_op);
 	# eval mode
