@@ -79,7 +79,7 @@ def model_fn(features, labels, mode):
 	if mode == tf.estimator.ModeKeys.TRAIN:
 		loss = -tf.reduce_mean(transformed_dist.log_prob(features));
 		#learning rate
-		lr = tf.train.cosine_decay(1e-6, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
+		lr = tf.train.cosine_decay(1e-2, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
 		optimizer = tf.train.AdamOptimizer(lr);
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step());
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, train_op = train_op);
