@@ -10,7 +10,7 @@ batch_size = 200;
 levels = 2;
 
 class GlowModel(tf.keras.Model):
-    def __init__(self, trainset, shape):
+    def __init__(self, shape):
         super(GlowModel, self).__init__();
         # 1-D vector code distribution
         self.base_distribution = tfp.distributions.MultivariateNormalDiag(
@@ -20,7 +20,7 @@ class GlowModel(tf.keras.Model):
         self.transformed_dist = tfp.distributions.TransformedDistribution(
             distribution = self.base_distribution,
             bijector = tfp.bijectors.Chain([
-                tfp.bijectors.Invert(Glow.Glow(trainset = trainset, levels = levels)),
+                tfp.bijectors.Invert(Glow.Glow(levels = levels)),
                 tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])])
             ]),
             name = "transformed_dist"
@@ -29,7 +29,6 @@ class GlowModel(tf.keras.Model):
     def call(self, input = None, training = False):
         if training:
             assert issubclass(type(input),tf.Tensor);
-            #TODO: make sure that input is tensor
             result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.log_prob(x))(input);
         else:
             assert type(input) is int and input >= 1;
@@ -57,7 +56,7 @@ def main(unused_argv):
     trainset = tf.data.TFRecordDataset(os.path.join('dataset','trainset.tfrecord')).map(parse_function).shuffle(100).batch(100);
     testset = tf.data.TFRecordDataset(os.path.join('dataset','testset.tfrecord')).map(parse_function).batch(100);
     #create model
-    model = GlowModel(trainset,shape = (32,32,1));
+    model = GlowModel(shape = (32,32,1));
     lr = tf.train.cosine_decay(1e-3, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
     optimizer = tf.train.AdamOptimizer(lr);
     #check point
