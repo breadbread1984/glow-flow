@@ -34,4 +34,6 @@ class Squeeze(tfp.bijectors.Bijector):
 	def _inverse_log_det_jacobian(self,y):
 		# dx/dy=I, so log|det(dx/dy)| = 0
 		ildj = tf.constant([0], dtype = y.dtype);
-		return tf.tile(ildj,tf.shape(y)[:-3]);
+		ildj = tf.tile(ildj,tf.shape(y)[:-3]);
+		tf.debugging.assert_equal(tf.debugging.is_nan(ildj),tf.tile([False],tf.shape(y)[:-3]));
+		return ildj;

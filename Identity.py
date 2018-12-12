@@ -13,4 +13,6 @@ class Identity(tfp.bijectors.Bijector):
 		return y;
 	def _inverse_log_det_jacobian(self,y):
 		ildj = tf.constant([0], dtype = y.dtype);
-		return tf.tile(ildj,tf.shape(y)[:-3]);
+		ildj = tf.tile(ildj,tf.shape(y)[:-3]);
+		tf.debugging.assert_equal(tf.debugging.is_nan(ildj),tf.tile([False],tf.shape(y)[:-3]));
+		return ildj;

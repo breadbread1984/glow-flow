@@ -58,4 +58,5 @@ class Parallel(tfp.bijectors.Bijector):
 				#this tensor slice gets nothing
 				continue;
 			ildj_sum = ildj_sum + ildj;
+		tf.debugging.assert_equal(tf.debugging.is_nan(ildj_sum),tf.tile([False],tf.shape(y)[:-3]));
 		return ildj_sum;
