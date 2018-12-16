@@ -10,7 +10,7 @@ batch_size = 200;
 levels = 2;
 
 class GlowModel(tf.keras.Model):
-    def __init__(self, shape):
+    def __init__(self, shape = (227,227,3)):
         super(GlowModel, self).__init__();
         # 1-D vector code distribution
         self.base_distribution = tfp.distributions.MultivariateNormalDiag(
@@ -25,7 +25,6 @@ class GlowModel(tf.keras.Model):
             ]),
             name = "transformed_dist"
         );
-
     def call(self, input = None, training = False):
         if training:
             assert issubclass(type(input),tf.Tensor);

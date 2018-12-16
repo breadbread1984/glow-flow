@@ -5,6 +5,7 @@ import tensorflow as tf;
 import tensorflow_probability as tfp;
 from ConvolutionInvertible import ConvolutionInvertible;
 from ActNorm import ActNorm;
+from AffineCoupling import AffineCoupling;
 
 class GlowStep(tfp.bijectors.Bijector):
     def __init__(self, depth = 2, validate_args = False, name = 'GlowStep'):
@@ -18,9 +19,7 @@ class GlowStep(tfp.bijectors.Bijector):
         for i in range(self.depth):
             layers.append(ActNorm(name = self._name + "/actnorm_{}".format(i)));
             layers.append(ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
-            layers.append(tfp.bijectors.Reshape(event_shape_in = list(shape[1:]), event_shape_out = [np.prod(shape[1:])], name = self._name + "/flatten_{}".format(i)));
-            layers.append(tfp.bijectors.RealNVP(num_masked = np.prod(shape[1:]) // 2, shift_and_log_scale_fn = tfp.bijectors.real_nvp_default_template(hidden_layers = [512,512]), name = self._name + "/realnvp_{}".format(i)));
-            layers.append(tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])], name = self._name + "/unflatten_{}".format(i)));
+            layers.append(AffineCoupling(num_blocks = 2, name = self._name + "/affinecoupling_{}".format(i)));
         # Note that tfb.Chain takes a list of bijectors in the *reverse* order
         self.flow = tfp.bijectors.Chain(list(reversed(layers)));
         self.built = True;
