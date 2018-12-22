@@ -35,6 +35,7 @@ class AffineCoupling(tfp.bijectors.Bijector):
         shifts = outputs[1];
         yb = scales * xb + shifts;
         y = tf.concat([ya,yb], axis = -1);
+        return y;
 
     def _inverse(self, y):
         ya,yb = tf.split(y, 2, axis = -1);
@@ -46,6 +47,7 @@ class AffineCoupling(tfp.bijectors.Bijector):
         shifts = outputs[1];
         xb = (scales - shifts) / scales;
         x = tf.concat([xa,xb], axis = -1);
+        return x;
 
     def _inverse_log_det_jacobian(self, y):
         ya,yb = tf.split(y, 2, axis = -1);
