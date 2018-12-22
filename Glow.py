@@ -51,7 +51,7 @@ class GlowModel(tf.keras.Model):
         assert type(levels) is int and levels > 0;
         assert type(shape) is tuple and len(shape) == 3;
         super(GlowModel, self).__init__();
-        code_dims = (shape[0] / 2**levels, shape[1] / 2**levels, shape[2] * 2**(levels + 1));
+        code_dims = (shape[0] // 2**levels, shape[1] // 2**levels, shape[2] * 2**(levels + 1));
         # 1-D vector code distribution
         self.base_distribution = tfp.distributions.MultivariateNormalDiag(
             loc = tf.zeros([np.prod(code_dims)], dtype = tf.float32),
