@@ -9,7 +9,7 @@ from Split import Split;
 
 class Glow(tfp.bijectors.Bijector):
 
-    #forward: dimension (b,h,w,c)->(b,h/2^levels,w/2^levels,c*2^levels)
+    #forward: dimension (b,h,w,c)->(b,h/2^levels,w/2^levels,c*2^(levels-1))
     def __init__(self, levels = 2, depth = 2, validate_args = False, name = 'Glow'):
         super(Glow,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
         self.levels = levels;

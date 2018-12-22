@@ -28,14 +28,14 @@ class Split(tfp.bijectors.Bijector):
         y = tf.concat([ya,yb], axis = -1);
         return y;
 
-    #NOTE: log |dy / dx| != -log |dx / dy| for this bijector
+    #NOTE: log det|dy / dx| != -log det|dx / dy| for this bijector
     def _forward_log_det_jacobian(self, x):
-        #log |dy/dx| = log N(xb; mean,s^2)
+        #log det|dy/dx| = log N(xb; mean,s^2)
         xa, xb = tf.split(x, 2, axis = -1);
         theta = self.conv(xa);
         mean, logs = tf.split(theta, 2, axis = -1);
         return -0.5 * (logs * 2 + ((xb - mean)**2) / tf.math.exp(logs * 2) + tf.math.log(2 * pi));
 
     def _inverse_log_det_jacobian(self, y):
-        #log |dy/dx| = log 1 = 0
+        #log det|dx/dy| = log 1 = 0
         return 0;
