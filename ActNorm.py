@@ -41,5 +41,5 @@ class ActNorm(tfp.bijectors.Bijector):
         #df^{-1}(y) / dy = 1 / stdvar
         #ildj = log(abs(diag(1/stdvar))), where diag(1/stdvar) is a (h*w) x (h*w) matrix
         shape = y.get_shape();
-        ildj = -np.prod(shape[1:2]) * tf.math.reduce_sum(tf.math.log(tf.abs(self.scale)));
+        ildj = -int(np.prod(shape[1:2])) * tf.math.reduce_sum(tf.math.log(tf.abs(self.scale)));
         return ildj;

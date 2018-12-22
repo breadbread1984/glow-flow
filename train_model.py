@@ -4,34 +4,9 @@ import os;
 import numpy as np;
 import tensorflow as tf;
 import tensorflow_probability as tfp;
-import Glow;
+from Glow import GlowModel;
 
 batch_size = 200;
-
-class GlowModel(tf.keras.Model):
-    def __init__(self, levels = 2, shape = (227,227,3)):
-        super(GlowModel, self).__init__();
-        # 1-D vector code distribution
-        self.base_distribution = tfp.distributions.MultivariateNormalDiag(
-            loc = tf.zeros([np.prod(shape[-3:])]),
-            scale_diag = tf.ones([np.prod(shape[-3:])])
-        );
-        self.transformed_dist = tfp.distributions.TransformedDistribution(
-            distribution = self.base_distribution,
-            bijector = tfp.bijectors.Chain([
-                tfp.bijectors.Invert(Glow.Glow(levels = levels)),
-                tfp.bijectors.Reshape(event_shape_out = list(shape[1:]), event_shape_in = [np.prod(shape[1:])])
-            ]),
-            name = "transformed_dist"
-        );
-    def call(self, input = None, training = False):
-        if training:
-            assert issubclass(type(input),tf.Tensor);
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.log_prob(x))(input);
-        else:
-            assert type(input) is int and input >= 1;
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.sample(x))(input);
-        return result;
 
 def parse_function(serialized_example):
     feature = tf.parse_single_example(

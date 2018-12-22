@@ -31,6 +31,6 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
     def _inverse_log_det_jacobian(self,y):
         if self.built == False: self.build(y);
         #slogdet is the LU decomposition implement of log(det|dy/dx|)
-        ildj = tf.reshape(-tf.linalg.slogdet(self.w),[1]);
+        ildj = tf.reshape(-tf.linalg.slogdet(self.w).log_abs_determinant,[1]);
         assert(ildj.shape == [1]);
         return tf.tile(ildj,tf.shape(y)[:-3]);

@@ -40,4 +40,4 @@ class Split(tfp.bijectors.Bijector):
 
     def _inverse_log_det_jacobian(self, y):
         #log det|dx/dy| = log 1 = 0
-        return 0;
+        return tf.zeros([1], dtype = tf.float32);
