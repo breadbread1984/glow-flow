@@ -21,7 +21,7 @@ class GlowStep(tfp.bijectors.Bijector):
         for i in range(self.depth):
             layers.append(ActNorm(name = self._name + "/actnorm_{}".format(i)));
             layers.append(ConvolutionInvertible(name = self._name + "/conv_inv_{}".format(i)));
-            layers.append(AffineCoupling(num_blocks = 2, name = self._name + "/affinecoupling_{}".format(i)));
+            layers.append(AffineCoupling(name = self._name + "/affinecoupling_{}".format(i)));
         # Note that tfb.Chain takes a list of bijectors in the *reverse* order
         self.flow = tfp.bijectors.Chain(list(reversed(layers)));
         self.built = True;
