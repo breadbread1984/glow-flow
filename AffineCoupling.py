@@ -7,7 +7,6 @@ import tensorflow_probability as tfp;
 class AffineCoupling(tfp.bijectors.Bijector):
 
     def __init__(self, hidden_filters = 512, validate_args = False, name = 'affinecoupling'):
-        assert type(filters) is list and len(filters) == 3;
         super(AffineCoupling,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
         self.hidden_filters = hidden_filters;
         self.initialized = False;
