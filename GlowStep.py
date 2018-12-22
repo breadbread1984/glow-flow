@@ -34,8 +34,12 @@ class GlowStep(tfp.bijectors.Bijector):
         if self.built == False: self.build(y);
         return self.flow.inverse(y);
 
+    def _forward_log_det_jacobian(self, x):
+        if self.built == False: self.build(x);
+        fldj = self.flow.forward_log_det_jacobian(x, event_ndims = 3);
+        return fldj;
+
     def _inverse_log_det_jacobian(self,y):
         if self.built == False: self.build(y);
         ildj = self.flow.inverse_log_det_jacobian(y, event_ndims = 3);
-        tf.debugging.assert_equal(tf.debugging.is_nan(ildj),tf.tile([False],tf.shape(y)[:-3]));
         return ildj;

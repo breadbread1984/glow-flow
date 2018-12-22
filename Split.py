@@ -36,8 +36,11 @@ class Split(tfp.bijectors.Bijector):
         xa, xb = tf.split(x, 2, axis = -1);
         theta = self.conv(xa);
         mean, logs = tf.split(theta, 2, axis = -1);
-        return -0.5 * (logs * 2 + tf.math.square(xb - mean) / tf.math.exp(logs * 2) + tf.math.log(2 * pi));
+        fldj = -0.5 * (logs * 2 + tf.math.square(xb - mean) / tf.math.exp(logs * 2) + tf.math.log(2 * pi));
+        fldj = tf.math.reduce_sum(fldj, axis = [1,2,3]);
+        return fldj;
 
     def _inverse_log_det_jacobian(self, y):
         #log det|dx/dy| = log 1 = 0
-        return tf.zeros([1], dtype = tf.float32);
+        ildj = tf.zeros([tf.shape(y)[0]], dtype = tf.y.dtype);
+        return ildj;
