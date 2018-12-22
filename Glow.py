@@ -52,17 +52,12 @@ class GlowModel(tf.keras.Model):
         super(GlowModel, self).__init__();
         code_dims = (shape[0] // 2**levels, shape[1] // 2**levels, shape[2] * 2**(levels + 1));
         # 1-D vector code distribution
-        self.base_distribution = tfp.distributions.MultivariateNormalDiag(
-            loc = tf.zeros([np.prod(code_dims)], dtype = tf.float32),
-            scale_diag = tf.ones([np.prod(code_dims)], dtype = tf.float32)
-        );
+        self.base_distribution = tfp.distributions.Normal(loc = 0., scale = 1.);
         self.transformed_dist = tfp.distributions.TransformedDistribution(
             distribution = self.base_distribution,
-            bijector = tfp.bijectors.Chain([
-                tfp.bijectors.Invert(Glow(levels = levels)),
-                tfp.bijectors.Reshape(event_shape_out = list(code_dims), event_shape_in = [np.prod(code_dims)])
-            ]),
-            name = "transformed_dist"
+            bijector = tfp.bijectors.Invert(Glow(levels = levels)),
+            name = "transformed_dist",
+            event_shape = shape
         );
 
     def call(self, input = None, training = False):
