@@ -19,33 +19,33 @@ class AffineCoupling(tfp.bijectors.Bijector):
         output = tf.keras.layers.Conv2D(filters = self.hidden_filters, kernel_size = (1,1), padding = 'same')(output);
         output = tf.keras.layers.BatchNormalization()(output);
         output = tf.keras.layers.ReLU()(output);
-        output = tf.keras.layers.Conv2D(filters = x.get_shape()[-1] * 2, kernel_size = (3,3), padding = 'same')(output);
+        output = tf.keras.layers.Conv2D(filters = int(x.get_shape()[-1] * 2), kernel_size = (3,3), padding = 'same')(output);
         shift,log_scale = tf.keras.layers.Lambda(lambda x: tf.split(x, 2, axis = -1))(output)
         scale = tf.keras.layers.Lambda(lambda x: tf.math.exp(x))(log_scale);
         self.nn = tf.keras.Model(input,[shift,scale]);
         self.initialized = True;
 
     def _forward(self, x):
-        if self.initialized == False:
-            self.build(x);
         xa,xb = tf.split(x, 2, axis = -1);
+        if self.initialized == False:
+            self.build(xa);
         ya = xa;
         outputs = self.nn(xa);
         scales = outputs[0];
         shifts = outputs[1];
         yb = scales * xb + shifts;
-        y = tf.concat([ya,yb]);
+        y = tf.concat([ya,yb], axis = -1);
 
     def _inverse(self, y):
-        if self.initialized == False:
-            self.build(y);
         ya,yb = tf.split(y, 2, axis = -1);
+        if self.initialized == False:
+            self.build(ya);
         xa = ya;
         outputs = self.nn(ya);
         scales = outputs[0];
         shifts = outputs[1];
         xb = (scales - shifts) / scales;
-        x = tf.concat([xa,xb]);
+        x = tf.concat([xa,xb], axis = -1);
 
     def _inverse_log_det_jacobian(self, y):
         ya,yb = tf.split(y, 2, axis = -1);
