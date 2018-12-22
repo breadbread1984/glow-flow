@@ -49,16 +49,6 @@ class AffineCoupling(tfp.bijectors.Bijector):
         x = tf.concat([xa,xb], axis = -1);
         return x;
 
-    def _forward_log_det_jacobian(self, x):
-        xa,xb = tf.split(x, 2, axis = -1);
-        if self.initialized == False:
-            self.build(xa);
-        outputs = self.nn(xa);
-        scales = outputs[0];
-        fldj = tf.math.reduce_sum(tf.math.log(tf.abs(scales)));
-        fldj = tf.tile([fldj],[tf.shape(x)[0]]);
-        return fldj;
-
     def _inverse_log_det_jacobian(self, y):
         ya,yb = tf.split(y, 2, axis = -1);
         if self.initialized == False:

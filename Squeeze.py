@@ -35,10 +35,6 @@ class Squeeze(tfp.bijectors.Bijector):
         x = tf.reshape(x, out_shape);
         return x;
 
-    def _forward_log_det_jacobian(self, x):
-        fldj = tf.zeros([tf.shape(x)[0]], dtype = x.dtype);
-        return fldj;
-
     def _inverse_log_det_jacobian(self, y):
         # dx/dy=I, so log|det(dx/dy)| = 0
         ildj = tf.zeros([tf.shape(y)[0]], dtype = y.dtype);
