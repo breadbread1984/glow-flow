@@ -8,7 +8,7 @@ batch_size = 100;
 levels = 2;
 
 def main(unused_argv):
-    generator = tf.estimator.Estimator(model_fn=model_fn, model_dir="generator_model");
+    generator = tf.estimator.Estimator(model_fn=model_fn, model_dir="checkpoints");
     tf.logging.set_verbosity(tf.logging.DEBUG);
     logging_hook = tf.train.LoggingTensorHook(tensors={"loss": "loss"}, every_n_iter=1);
     generator.train(input_fn=train_input_fn, steps=200000, hooks=[logging_hook]);
