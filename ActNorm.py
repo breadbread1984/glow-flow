@@ -23,8 +23,8 @@ class ActNorm(tfp.bijectors.Bijector):
         #initialize with the first batch
         if self.initialized == False:
             mean,stdvar = self.getStatics(x);
-            self.loc = tf.Variable(-mean, name = 'mean');
-            self.scale = tf.Variable(1. / (stdvar + 1e-6), name = 'stdvar');
+            self.loc = -mean;
+            self.scale = tf.math.reciprocal(stdvar + 1e-6);
             self.initialized = True;
         return (x + self.loc) * self.scale;
 
@@ -32,8 +32,8 @@ class ActNorm(tfp.bijectors.Bijector):
         #initialize with the first batch
         if self.initialized == False:
             mean,stdvar = self.getStatics(y);
-            self.loc = tf.Variable(mean, name = 'mean');
-            self.scale = tf.Variable(stdvar, name = 'stdvar');
+            self.loc = mean;
+            self.scale = stdvar;
             self.initialized = True;
         return y / self.scale - self.loc;
 
@@ -41,6 +41,7 @@ class ActNorm(tfp.bijectors.Bijector):
         #df^{-1}(y) / dy = 1 / stdvar
         #ildj = log(abs(diag(1/stdvar))), where diag(1/stdvar) is a (h*w) x (h*w) matrix
         shape = tf.shape(y);
-        ildj = -int(np.prod(shape[1:2])) * tf.math.reduce_sum(tf.math.log(tf.abs(self.scale)));
+        ildj = -tf.math.reduce_prod(tf.cast(shape[1:2], dtype = tf.float32)) \
+               * tf.math.reduce_sum(tf.math.log(tf.abs(self.scale)));
         ildj = tf.tile([ildj],[tf.shape(y)[0]]);
         return ildj;

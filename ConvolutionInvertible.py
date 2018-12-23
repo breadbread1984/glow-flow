@@ -15,7 +15,7 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
         #shared weight between forward and inverse conv operators
         with tf.variable_scope(self._name):
             #shape=(height,width,channel_in,channel_out)
-            self.w = tf.get_variable("w", shape = [1,1,shape[-1],shape[-1]], dtype = tf.float32,initializer = tf.initializers.orthogonal());
+            self.w = tf.Variable(np.random.normal(size = (1, 1, shape[-1], shape[-1])), dtype = tf.float32);
         self.initialized = True;
 
     def _forward(self,x):
@@ -32,5 +32,5 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
         if self.initialized == False: self.build(y);
         #slogdet is the LU decomposition implement of log(det|dy/dx|)
         ildj = tf.reshape(-tf.linalg.slogdet(self.w).log_abs_determinant,[1]);
-        ildj = tf.tile(ildj,[int(tf.shape(y)[0])]);
+        ildj = tf.tile(ildj,[tf.shape(y)[0]]);
         return ildj;
