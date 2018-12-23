@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import numpy as np;
-import tensorflow as tf;
 import tensorflow_probability as tfp;
 from Squeeze import Squeeze;
 from GlowStep import GlowStep;
@@ -14,7 +12,7 @@ class Glow(tfp.bijectors.Bijector):
         super(Glow,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
         self.levels = levels;
         self.depth = depth;
-        self.built = False;
+        self.initialized = False;
 
     def build(self, x):
         shape = x.get_shape();
@@ -27,44 +25,19 @@ class Glow(tfp.bijectors.Bijector):
                 layers.append(Split(name = self._name + "/split_{}".format(i))); #c''=c'/2=2*c
         # Note that tfb.Chain takes a list of bijectors in the *reverse* order
         self.flow = tfp.bijectors.Chain(list(reversed(layers)));
-        self.built = True;
+        self.initialized = True;
 
     def _forward(self, x):
-        if self.built == False: self.build(x);
+        if self.initialized == False: self.build(x);
         #from image->code
         return self.flow.forward(x);
 
     def _inverse(self, y):
-        if self.built == False: self.build(y);
+        if self.initialized == False: self.build(y);
         #from code->image
         return self.flow.inverse(y);
 
     def _inverse_log_det_jacobian(self, y):
-        if self.built == False: self.build(y);
+        if self.initialized == False: self.build(y);
         ildj = self.flow.inverse_log_det_jacobian(y,event_ndims = 3);
         return ildj;
-
-class GlowModel(tf.keras.Model):
-
-    def __init__(self, levels = 2, shape = (227,227,3)):
-        assert type(levels) is int and levels > 0;
-        assert type(shape) is tuple and len(shape) == 3;
-        super(GlowModel, self).__init__();
-        code_dims = (shape[0] // 2**levels, shape[1] // 2**levels, shape[2] * 2**(levels + 1));
-        # 1-D vector code distribution
-        self.base_distribution = tfp.distributions.Normal(loc = 0., scale = 1.);
-        self.transformed_dist = tfp.distributions.TransformedDistribution(
-            distribution = self.base_distribution,
-            bijector = tfp.bijectors.Invert(Glow(levels = levels)),
-            name = "transformed_dist",
-            event_shape = shape
-        );
-
-    def call(self, input = None, training = False):
-        if training:
-            assert issubclass(type(input),tf.Tensor);
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.log_prob(x))(input);
-        else:
-            assert type(input) is int and input >= 1;
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.sample(x))(input);
-        return result;

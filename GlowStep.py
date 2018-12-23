@@ -12,7 +12,7 @@ class GlowStep(tfp.bijectors.Bijector):
     def __init__(self, depth = 2, validate_args = False, name = 'GlowStep'):
         super(GlowStep,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
         self.depth = depth;
-        self.built = False;
+        self.initialized = False;
 
     def build(self,x):
         shape = x.get_shape();
@@ -24,17 +24,17 @@ class GlowStep(tfp.bijectors.Bijector):
             layers.append(AffineCoupling(name = self._name + "/affinecoupling_{}".format(i)));
         # Note that tfb.Chain takes a list of bijectors in the *reverse* order
         self.flow = tfp.bijectors.Chain(list(reversed(layers)));
-        self.built = True;
+        self.initialized = True;
 
     def _forward(self,x):
-        if self.built == False: self.build(x);
+        if self.initialized == False: self.build(x);
         return self.flow.forward(x);
 
     def _inverse(self,y):
-        if self.built == False: self.build(y);
+        if self.initialized == False: self.build(y);
         return self.flow.inverse(y);
 
     def _inverse_log_det_jacobian(self,y):
-        if self.built == False: self.build(y);
+        if self.initialized == False: self.build(y);
         ildj = self.flow.inverse_log_det_jacobian(y, event_ndims = 3);
         return ildj;
