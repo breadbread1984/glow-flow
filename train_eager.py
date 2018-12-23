@@ -19,14 +19,16 @@ class GlowModel(tf.keras.Model):
             name = "transformed_dist",
             event_shape = shape[-3:]
         );
+        self.likelihood = tf.keras.layers.Lambda(lambda x: self.transformed_dist.log_prob(x));
+        self.predict = tf.keras.layers.Lambda(lambda x: self.transformed_dist.sample(x));
 
     def call(self, input = None, training = False):
         if training:
             assert issubclass(type(input),tf.Tensor);
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.log_prob(x))(input);
+            result = self.likelihood(input);
         else:
             assert type(input) is int and input >= 1;
-            result = tf.keras.layers.Lambda(lambda x: self.transformed_dist.sample(x))(input);
+            result = self.predict(input);
         return result;
 
 def parse_function(serialized_example):

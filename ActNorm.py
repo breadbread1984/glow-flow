@@ -25,8 +25,6 @@ class ActNorm(tfp.bijectors.Bijector):
             mean,stdvar = self.getStatics(x);
             self.loc = -mean;
             self.scale = tf.math.reciprocal(stdvar + 1e-6);
-            print("loc",self.loc);
-            print("scale",self.scale);
             self.initialized = True;
         return (x + self.loc) * self.scale;
 
@@ -36,8 +34,6 @@ class ActNorm(tfp.bijectors.Bijector):
             mean,stdvar = self.getStatics(y);
             self.loc = mean;
             self.scale = stdvar;
-            print("loc",self.loc);
-            print("scale",self.scale);
             self.initialized = True;
         return y / self.scale - self.loc;
 
