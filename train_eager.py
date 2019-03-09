@@ -32,14 +32,14 @@ class GlowModel(tf.keras.Model):
         return result;
 
 def parse_function(serialized_example):
-    feature = tf.parse_single_example(
+    feature = tf.io.parse_single_example(
         serialized_example,
         features = {
-            'data':tf.FixedLenFeature((),dtype = tf.string,default_value = ''),
-            'label':tf.FixedLenFeature((),dtype = tf.int64,default_value = 0)
+            'data':tf.io.FixedLenFeature((),dtype = tf.string,default_value = ''),
+            'label':tf.io.FixedLenFeature((),dtype = tf.int64,default_value = 0)
         }
     );
-    data = tf.decode_raw(feature['data'],out_type = tf.uint8);
+    data = tf.io.decode_raw(feature['data'],out_type = tf.uint8);
     data = tf.reshape(data,[28,28,1]);
     data = tf.pad(data, paddings = [[2,2],[2,2],[0,0]], mode = 'CONSTANT');
     data = tf.cast(data,dtype = tf.float32);
@@ -85,6 +85,6 @@ def main(unused_argv):
     #TODO: test model
 
 if __name__ == "__main__":
-    
+
     assert tf.executing_eagerly();
     tf.app.run();

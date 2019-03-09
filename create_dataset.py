@@ -13,7 +13,7 @@ def write_tfrecord(data,label,filename):
         label = np.array(label,dtype = np.int64);
         if True == os.path.exists(filename):
                 os.remove(filename);
-        writer = tf.python_io.TFRecordWriter(filename);
+        writer = tf.io.TFRecordWriter(filename);
         for i in range(data.shape[0]):
                 trainsample = tf.train.Example(features = tf.train.Features(
                         feature = {
