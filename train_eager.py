@@ -47,33 +47,35 @@ def parse_function(serialized_example):
     return data,label;
 
 def main(unused_argv):
-    tf.enable_eager_execution();
     #prepare dataset
     trainset = tf.data.TFRecordDataset(os.path.join('dataset','trainset.tfrecord')).map(parse_function).shuffle(100).batch(100);
     testset = tf.data.TFRecordDataset(os.path.join('dataset','testset.tfrecord')).map(parse_function).batch(100);
     #create model
     model = GlowModel(shape = (32,32,1));
     lr = tf.train.cosine_decay(1e-3, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
-    optimizer = tf.train.AdamOptimizer(lr);
+    optimizer = tf.keras.optimizers.Adam(lr);
     #check point
     if False == os.path.exists('checkpoints'): os.mkdir('checkpoints');
-    checkpoint = tf.train.Checkpoint(model = model, optimizer = optimizer, optimizer_step = tf.train.get_or_create_global_step());
+    checkpoint = tf.train.Checkpoint(model = model, optimizer = optimizer, optimizer_step = optimizer.iterations);
     checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
     #create log
-    log = tf.contrib.summary.create_file_writer('checkpoints');
-    log.set_as_default();
+    log = tf.summary.create_file_writer('checkpoints');
     #train model
     print("training");
+    avg_loss = tf.keras.metrics.Mean(name = 'loss', dtype = tf.float32);
     while True:
-        for (batch,(images,_)) in enumerate(trainset):
+        for (images,_) in enumerate(trainset):
             with tf.GradientTape() as tape:
                 loss = -tf.math.reduce_mean(model(images, training = True),name = 'loss');
+                avg.loss.update_state(loss);
             #write log
-            with tf.contrib.summary.record_summaries_every_n_global_steps(2, global_step = tf.train.get_global_step()):
-                tf.contrib.summary.scalar('loss',loss);
+            if tf.equal(optimizer.iterations % 10, 0):
+                with log.as_default():
+                    tf.summary.scalar('loss',avg_loss.result());
+                print('Step #%d Loss: %.6f' % (optimizer.iterations,avg_loss.result()));
+                avg_loss.reset_states();
             grads = tape.gradient(loss, model.variables);
-            optimizer.apply_gradients(zip(grads,model.variables),global_step = tf.train.get_global_step());
-            if batch % 100 == 0: print('Step #%d\tLoss: %.6f' % (batch,loss));
+            optimizer.apply_gradients(zip(grads,model.variables));
         #save model once every epoch
         checkpoint.save(os.path.join('checkpoints','ckpt'));
         if loss < 0.01: break;
@@ -83,4 +85,6 @@ def main(unused_argv):
     #TODO: test model
 
 if __name__ == "__main__":
+    
+    assert tf.executing_eagerly();
     tf.app.run();
