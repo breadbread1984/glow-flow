@@ -4,6 +4,11 @@ this project implements the Glow algorithm introduced in paper [Glow: Generative
 ### introduction
 Glow is proposed to provide an invertible generative model. The project is implemented with utilities of tensorflow 2.0 and tensorflow probability. 
 
+### install tensorflow 2.0 preview
+```bash
+pip3 install -U tf-nightly-gpu-2.0 tfp-nightly-gpu
+```
+
 ### create dataset
 create dataset with the following command
 
