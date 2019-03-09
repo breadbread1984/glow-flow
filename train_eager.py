@@ -46,14 +46,14 @@ def parse_function(serialized_example):
     label = tf.cast(feature['label'],dtype = tf.int32);
     return data,label;
 
-def main(unused_argv):
+def main():
     #prepare dataset
     trainset = tf.data.TFRecordDataset(os.path.join('dataset','trainset.tfrecord')).map(parse_function).shuffle(100).batch(100);
     testset = tf.data.TFRecordDataset(os.path.join('dataset','testset.tfrecord')).map(parse_function).batch(100);
     #create model
     model = GlowModel(shape = (32,32,1));
-    lr = tf.train.cosine_decay(1e-3, global_step = tf.train.get_or_create_global_step(), decay_steps = 1000);
-    optimizer = tf.keras.optimizers.Adam(lr);
+    #lr = tf.compat.v1.train.cosine_decay(1e-3, global_step = optimizer.iterations, decay_steps = 1000);
+    optimizer = tf.keras.optimizers.Adam(1e-3);
     #check point
     if False == os.path.exists('checkpoints'): os.mkdir('checkpoints');
     checkpoint = tf.train.Checkpoint(model = model, optimizer = optimizer, optimizer_step = optimizer.iterations);
@@ -87,4 +87,4 @@ def main(unused_argv):
 if __name__ == "__main__":
 
     assert tf.executing_eagerly();
-    tf.app.run();
+    main();
