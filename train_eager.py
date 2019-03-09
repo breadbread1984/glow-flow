@@ -64,14 +64,14 @@ def main():
     print("training");
     avg_loss = tf.keras.metrics.Mean(name = 'loss', dtype = tf.float32);
     while True:
-        for (images,_) in enumerate(trainset):
+        for (images,_) in trainset:
             with tf.GradientTape() as tape:
                 loss = -tf.math.reduce_mean(model(images, training = True),name = 'loss');
-                avg.loss.update_state(loss);
+                avg_loss.update_state(loss);
             #write log
             if tf.equal(optimizer.iterations % 10, 0):
                 with log.as_default():
-                    tf.summary.scalar('loss',avg_loss.result());
+                    tf.summary.scalar('loss',avg_loss.result(), step = optimizer.iterations);
                 print('Step #%d Loss: %.6f' % (optimizer.iterations,avg_loss.result()));
                 avg_loss.reset_states();
             grads = tape.gradient(loss, model.variables);

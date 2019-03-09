@@ -14,15 +14,15 @@ class Split(tfp.bijectors.Bijector):
     def _forward(self, x):
         #xb is thought to be a part of the encoding which follows a normal distribution
         if self.initialized == False:
-            self.conv = tf.layers.Conv2D(filters = x.get_shape()[-1], kernel_size = (3,3), padding = 'same');
-            self.initialized = True;        
+            self.conv = tf.keras.layers.Conv2D(filters = x.get_shape()[-1], kernel_size = (3,3), padding = 'same');
+            self.initialized = True;
         xa, xb = tf.split(x, 2, axis = -1);
         return xa;
 
     def _inverse(self, ya):
         #yb is a sampled part of the encoding which follows a normal distribution
         if self.initialized == False:
-            self.conv = tf.layers.Conv2D(filters = ya.get_shape()[-1] * 2, kernel_size = (3,3), padding = 'same');
+            self.conv = tf.keras.layers.Conv2D(filters = ya.get_shape()[-1] * 2, kernel_size = (3,3), padding = 'same');
             self.initialized = True;
         theta = self.conv(ya);
         mean, logs = tf.split(theta, 2, axis = -1);
