@@ -6,6 +6,7 @@ Glow is proposed to provide an invertible generative model. The project is imple
 
 ### install tensorflow 2.0 preview
 ```bash
+pip3 install -U --pre tensorflow-gpu
 pip3 install -U tf-nightly-gpu-2.0 tfp-nightly-gpu
 ```
 
