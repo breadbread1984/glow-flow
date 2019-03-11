@@ -14,7 +14,11 @@ class Split(tfp.bijectors.Bijector):
     def _forward(self, x):
         #xb is thought to be a part of the encoding which follows a normal distribution
         if self.initialized == False:
-            self.conv = tf.keras.layers.Conv2D(filters = x.get_shape()[-1], kernel_size = (3,3), padding = 'same');
+            shape = x.get_shape();
+            input_shape = (shape[-3], shape[-2], shape[-1] // 2 );
+            input = tf.keras.Input(shape = input_shape);
+            result = tf.keras.layers.Conv2D(filters = shape[-1], kernel_size = (3,3), padding = 'same')(input);
+            self.conv = tf.keras.Model(input,[result]);
             self.initialized = True;
         xa, xb = tf.split(x, 2, axis = -1);
         return xa;
@@ -22,7 +26,11 @@ class Split(tfp.bijectors.Bijector):
     def _inverse(self, ya):
         #yb is a sampled part of the encoding which follows a normal distribution
         if self.initialized == False:
-            self.conv = tf.keras.layers.Conv2D(filters = ya.get_shape()[-1] * 2, kernel_size = (3,3), padding = 'same');
+            shape = ya.get_shape();
+            input_shape = shape;
+            input = tf.keras.Input(shape = input_shape);
+            result = tf.keras.layers.Conv2D(filters = shape[-1] * 2, kernel_size = (3,3), padding = 'same')(input);
+            self.conv = tf.keras.Model(input,[result]);
             self.initialized = True;
         theta = self.conv(ya);
         mean, logs = tf.split(theta, 2, axis = -1);
