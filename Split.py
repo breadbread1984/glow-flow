@@ -27,7 +27,7 @@ class Split(tfp.bijectors.Bijector):
         #yb is a sampled part of the encoding which follows a normal distribution
         if self.initialized == False:
             shape = ya.get_shape();
-            input_shape = shape;
+            input_shape = shape[-3:];
             input = tf.keras.Input(shape = input_shape);
             result = tf.keras.layers.Conv2D(filters = shape[-1] * 2, kernel_size = (3,3), padding = 'same')(input);
             self.conv = tf.keras.Model(input,[result]);
