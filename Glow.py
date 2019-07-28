@@ -15,7 +15,6 @@ class Glow(tfp.bijectors.Bijector):
         self.initialized = False;
 
     def build(self, x):
-        shape = x.get_shape();
         # setup network structure
         layers = [];
         for i in range(self.levels):

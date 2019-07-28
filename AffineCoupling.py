@@ -12,17 +12,17 @@ class AffineCoupling(tfp.bijectors.Bijector):
         self.initialized = False;
         
     def build(self, x):
-        input = tf.keras.Input(shape = x.get_shape()[-3:]);
-        output = tf.keras.layers.Conv2D(filters = self.hidden_filters, kernel_size = (3,3), padding = 'same')(input);
+        inputs = tf.keras.Input(shape = x.shape[-3:]);
+        output = tf.keras.layers.Conv2D(filters = self.hidden_filters, kernel_size = (3,3), padding = 'same')(inputs);
         output = tf.keras.layers.BatchNormalization()(output);
         output = tf.keras.layers.ReLU()(output);
         output = tf.keras.layers.Conv2D(filters = self.hidden_filters, kernel_size = (1,1), padding = 'same')(output);
         output = tf.keras.layers.BatchNormalization()(output);
         output = tf.keras.layers.ReLU()(output);
-        output = tf.keras.layers.Conv2D(filters = int(x.get_shape()[-1] * 2), kernel_size = (3,3), padding = 'same')(output);
+        output = tf.keras.layers.Conv2D(filters = int(x.shape[-1] * 2), kernel_size = (3,3), padding = 'same')(output);
         shift,log_scale = tf.keras.layers.Lambda(lambda x: tf.split(x, 2, axis = -1))(output)
         scale = tf.keras.layers.Lambda(lambda x: tf.math.exp(x))(log_scale);
-        self.nn = tf.keras.Model(input,[shift,scale]);
+        self.nn = tf.keras.Model(inputs = inputs, outputs = [shift,scale]);
         self.initialized = True;
 
     def _forward(self, x):
