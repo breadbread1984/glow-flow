@@ -11,7 +11,8 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
         input_shape = np.array(input_shape);
         #shared weight between forward and inverse conv operators
         #shape=(height,width,channel_in,channel_out)
-        self.w = tf.Variable(np.random.normal(size = (1, 1, input_shape[-1], input_shape[-1])), dtype = tf.float32);
+        initial_value = np.expand_dims(np.expand_dims(np.eye(input_shape[-1]), 0), 0);
+        self.w = tf.Variable(initial_value, dtype = tf.float32, trainable = True);
 
     def _forward(self,x):
         y = tf.nn.conv2d(x,filters = self.w,strides=(1,1,1,1),padding = 'SAME');

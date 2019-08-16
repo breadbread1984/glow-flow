@@ -37,7 +37,6 @@ def main():
     #lr = tf.compat.v1.train.cosine_decay(1e-3, global_step = optimizer.iterations, decay_steps = 1000);
     optimizer = tf.keras.optimizers.Adam(1e-3);
     #check point
-    if False == os.path.exists('checkpoints'): os.mkdir('checkpoints');
     checkpoint = tf.train.Checkpoint(model = glow, optimizer = optimizer, optimizer_step = optimizer.iterations);
     checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
     #create log
