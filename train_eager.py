@@ -30,7 +30,7 @@ def main():
     #create model
     glow = tfp.distributions.TransformedDistribution(
         distribution = tfp.distributions.Normal(loc = 0., scale = 1.),
-        bijector = tfp.bijectors.Invert(Glow(levels = 2)),
+        bijector = tfp.bijectors.Invert(Glow(input_shape = (32,32,1), levels = 2)),
         name = "transformed_dist",
         event_shape = (32,32,1)
     );
