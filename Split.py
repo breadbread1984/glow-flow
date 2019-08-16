@@ -7,31 +7,20 @@ import tensorflow_probability as tfp;
 
 class Split(tfp.bijectors.Bijector):
 
-    def __init__(self, validate_args = False, name = 'split'):
+    def __init__(self, input_shape, validate_args = False, name = 'split'):
         super(Split,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
-        self.initialized = False;
+        input_shape = (input_shape[-3], input_shape[-2], input_shape[-1] // 2);
+        inputs = tf.keras.Input(shape = input_shape);
+        results = tf.keras.layers.Conv2D(filters=input_shape[-1], kernel_size=(3, 3), padding='same')(inputs);
+        self.conv = tf.keras.Model(inputs = inputs, outputs = results);
 
     def _forward(self, x):
         #xb is thought to be a part of the encoding which follows a normal distribution
-        if self.initialized == False:
-            shape = x.get_shape();
-            input_shape = (shape[-3], shape[-2], shape[-1] // 2 );
-            input = tf.keras.Input(shape = input_shape);
-            result = tf.keras.layers.Conv2D(filters = shape[-1], kernel_size = (3,3), padding = 'same')(input);
-            self.conv = tf.keras.Model(input,[result]);
-            self.initialized = True;
         xa, xb = tf.split(x, 2, axis = -1);
         return xa;
 
     def _inverse(self, ya):
         #yb is a sampled part of the encoding which follows a normal distribution
-        if self.initialized == False:
-            shape = ya.get_shape();
-            input_shape = shape[-3:];
-            input = tf.keras.Input(shape = input_shape);
-            result = tf.keras.layers.Conv2D(filters = shape[-1] * 2, kernel_size = (3,3), padding = 'same')(input);
-            self.conv = tf.keras.Model(input,[result]);
-            self.initialized = True;
         theta = self.conv(ya);
         mean, logs = tf.split(theta, 2, axis = -1);
         yb = tf.random.normal(mean.get_shape()) * tf.math.exp(logs) + mean;

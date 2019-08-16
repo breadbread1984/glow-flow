@@ -20,7 +20,7 @@ class Glow(tfp.bijectors.Bijector):
             input_shape[-3:-1] = input_shape[-3:-1] // 2;
             layers.append(GlowStep(input_shape, depth = depth,name = self._name + "/glowstep_{}".format(i)));
             if i < levels - 1:
-                layers.append(Split(name = self._name + "/split_{}".format(i))); #c''=c'/2=2*c
+                layers.append(Split(input_shape, name = self._name + "/split_{}".format(i))); #c''=c'/2=2*c
         # Note that tfb.Chain takes a list of bijectors in the *reverse* order
         self.flow = tfp.bijectors.Chain(list(reversed(layers)));
 
