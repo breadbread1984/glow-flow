@@ -11,7 +11,7 @@ class Split(tfp.bijectors.Bijector):
         super(Split,self).__init__(forward_min_event_ndims = 3, validate_args = validate_args, name = name);
         input_shape = (input_shape[-3], input_shape[-2], input_shape[-1] // 2);
         inputs = tf.keras.Input(shape = input_shape);
-        results = tf.keras.layers.Conv2D(filters=input_shape[-1], kernel_size = (3, 3), padding='same')(inputs);
+        results = tf.keras.layers.Conv2D(filters = input_shape[-1] * 2, kernel_size = (3, 3), padding='same')(inputs);
         self.conv = tf.keras.Model(inputs = inputs, outputs = results);
 
     def _forward(self, x):

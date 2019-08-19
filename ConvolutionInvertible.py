@@ -19,11 +19,13 @@ class ConvolutionInvertible(tfp.bijectors.Bijector):
         return y;
 
     def _inverse(self,y):
-        x = tf.nn.conv2d(y,filters = tf.matrix_inverse(self.w),strides=(1,1,1,1),padding = 'SAME');
+        x = tf.nn.conv2d(y,filters = tf.linalg.inv(self.w),strides=(1,1,1,1),padding = 'SAME');
         return x;
 
     def _inverse_log_det_jacobian(self,y):
         #slogdet is the LU decomposition implement of log(det|dy/dx|)
-        ildj = tf.reshape(-tf.linalg.slogdet(self.w).log_abs_determinant,[1]);
+        #ildj = tf.reshape(-tf.linalg.slogdet(self.w).log_abs_determinant,[1]);
+        ildj = tf.math.log(tf.math.abs(tf.linalg.det(tf.linalg.inv(self.w))));
+        ildj = tf.reshape(ildj, shape = (1,));
         ildj = tf.tile(ildj,[tf.shape(y)[0]]);
         return ildj;
