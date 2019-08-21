@@ -11,7 +11,7 @@ class AffineCoupling(tfp.bijectors.Bijector):
         input_shape = np.array(input_shape);
         input_shape[-1] = input_shape[-1] // 2;
         # build network
-        inputs = tf.keras.Input(shape = input_shape[-3:]);
+        inputs = tf.keras.Input(shape = input_shape[-3:].tolist());
         output = tf.keras.layers.Conv2D(filters = hidden_filters, kernel_size = (3,3), padding = 'same')(inputs);
         output = tf.keras.layers.BatchNormalization()(output);
         output = tf.keras.layers.ReLU()(output);
